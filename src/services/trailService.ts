@@ -117,11 +117,42 @@ const fallbackTrails: Trail[] = [
     createdBy: 'system',
     verified: true,
     createdAt: Date.now() - 259200000 // 3 days ago
+  },
+  {
+    id: 'hidden-waterfall-004',
+    name: 'Hidden Waterfall Trail',
+    location: 'Kandy, Sri Lanka',
+    difficulty: 'Moderate',
+    duration: '3-4 hours',
+    distance: '6.8 km',
+    price: 0,
+    rating: 4.6,
+    reviews: 42,
+    description: 'A beautiful hidden waterfall discovered by local hikers. This trail leads through dense forest to a stunning 40-meter waterfall with natural swimming pools.',
+    image: '/images/trails/hidden-waterfall.jpg',
+    features: ['GPS Tracking', 'NFT Certificate', 'TREK Rewards', 'Waterfall', 'Swimming'],
+    coordinates: [
+      { lat: 7.2906, lng: 80.6337 },
+      { lat: 7.2926, lng: 80.6357 },
+      { lat: 7.2956, lng: 80.6387 }
+    ],
+    rewards: {
+      trekTokens: 40,
+      nftCertificate: true,
+      experiencePoints: 400
+    },
+    isPremiumOnly: false,
+    isUserContributed: true,
+    contributedBy: 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
+    contributedByName: 'Hiking_Explorer_LK',
+    createdBy: 'user',
+    verified: true,
+    createdAt: Date.now() - 86400000 // 1 day ago
   }
 ]
 
 export class TrailService {
-  private useBlockchain: boolean = true
+  private useBlockchain: boolean = false // Force fallback data for testing
 
   constructor() {
     // Check if blockchain is available
@@ -155,10 +186,14 @@ export class TrailService {
           return blockchainTrails.map(convertBlockchainTrailToFrontend)
         } else {
           console.log('📝 No trails found on blockchain, using fallback data')
+          console.log('Fallback trails count:', fallbackTrails.length)
+          console.log('User contributed trails:', fallbackTrails.filter(t => t.isUserContributed))
           return fallbackTrails
         }
       } else {
         console.log('💾 Using fallback trail data (blockchain unavailable)')
+        console.log('Fallback trails count:', fallbackTrails.length)
+        console.log('User contributed trails:', fallbackTrails.filter(t => t.isUserContributed))
         return fallbackTrails
       }
     } catch (error) {

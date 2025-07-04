@@ -1,0 +1,93 @@
+/* Trail Map Component Styles */
+
+/* Custom marker styles */
+.customTrailMarker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Difficulty badge styles */
+.difficultyEasy {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+}
+
+.difficultyModerate {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+}
+
+.difficultyHard {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+/* Loading animation improvements */
+.mapLoadingContainer {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+}
+
+.loadingPulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.loadingBounce {
+  animation: bounce 1s infinite;
+}
+
+.progressBar {
+  background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+  animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% { width: 0%; }
+  50% { width: 75%; }
+  100% { width: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+/* Map container optimizations */
+.mapContainer {
+  /* Improve rendering performance */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .customTrailMarker {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+}

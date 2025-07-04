@@ -186,44 +186,8 @@ export class BlockchainService {
     }
   }
 
-  // Create booking transaction
-  async createBookingTransaction(trailId: string, amount: number, date: string): Promise<string> {
-    if (!this.wallet || typeof window === 'undefined' || !Transaction) throw new Error('Wallet not connected or Transaction not available')
-
-    try {
-      const walletAddress = await this.wallet.getChangeAddress()
-
-      // Create booking metadata
-      const bookingMetadata = {
-        trail_id: trailId,
-        booking_date: date,
-        amount: amount,
-        timestamp: new Date().toISOString(),
-        hiker_address: walletAddress,
-      }
-
-      // Build transaction (simplified - in production, this would interact with smart contracts)
-      const tx = new Transaction({ initiator: this.wallet })
-      
-      // Add metadata to transaction
-      tx.setMetadata(674, bookingMetadata)
-      
-      // Send payment to script address (or trail operator)
-      tx.sendLovelace(
-        BLOCKCHAIN_CONFIG.scriptAddress,
-        (amount * 1000000).toString() // Convert ADA to Lovelace
-      )
-      
-      const unsignedTx = await tx.build()
-      const signedTx = await this.wallet.signTx(unsignedTx)
-      const txHash = await this.wallet.submitTx(signedTx)
-      
-      return txHash
-    } catch (error) {
-      console.error('Error creating booking transaction:', error)
-      throw error
-    }
-  }
+  // VinTrek provides free access to all trails
+  // No booking transactions needed - users can access trails anytime
 
   // Mint trail completion NFT
   async mintTrailNFT(trailData: {
@@ -378,8 +342,94 @@ export interface GPSTrack {
   txHash?: string
 }
 
+// Enhanced blockchain metadata interfaces for VinTrek
+export interface TrailCompletionMetadata {
+  type: 'trail_completion'
+  trail_id: string
+  hiker_address: string
+  completion_timestamp: string
+  distance_meters: number
+  duration_seconds: number
+  difficulty: string
+  gps_checkpoints: Array<{ lat: number; lng: number; timestamp: string }>
+  verification_score: number // 0-100 based on GPS accuracy
+  trek_tokens_earned: number
+  nft_minted: boolean
+}
+
+// VinTrek provides free trail access - no booking metadata needed
+
+export interface RewardMetadata {
+  type: 'trek_reward'
+  hiker_address: string
+  trail_id: string
+  reward_type: 'completion' | 'achievement' | 'bonus'
+  trek_amount: number
+  timestamp: string
+  achievement_id?: string
+}
+
 // Extend BlockchainService with trail data storage
 export class VinTrekBlockchainService extends BlockchainService {
+
+  // Store trail completion proof on Cardano blockchain
+  async storeTrailCompletion(completionData: {
+    trailId: string
+    hikerAddress: string
+    distance: number
+    duration: number
+    difficulty: string
+    gpsPath: Array<{ lat: number; lng: number; timestamp: string }>
+    trekTokensEarned: number
+    nftMinted: boolean
+  }): Promise<string> {
+    if (!this.wallet || typeof window === 'undefined' || !Transaction) {
+      throw new Error('Wallet not connected or Transaction not available')
+    }
+
+    try {
+      console.log('🔗 Storing trail completion on Cardano blockchain...')
+
+      // Compress GPS path for metadata (keep only key checkpoints)
+      const compressedGPS = this.compressGPSPath(completionData.gpsPath, 10)
+
+      // Create completion metadata
+      const metadata: TrailCompletionMetadata = {
+        type: 'trail_completion',
+        trail_id: completionData.trailId,
+        hiker_address: completionData.hikerAddress,
+        completion_timestamp: new Date().toISOString(),
+        distance_meters: Math.round(completionData.distance),
+        duration_seconds: Math.round(completionData.duration),
+        difficulty: completionData.difficulty,
+        gps_checkpoints: compressedGPS,
+        verification_score: this.calculateVerificationScore(completionData.gpsPath),
+        trek_tokens_earned: completionData.trekTokensEarned,
+        nft_minted: completionData.nftMinted
+      }
+
+      // Build transaction
+      const tx = new Transaction({ initiator: this.wallet })
+
+      // Add metadata to transaction (using label 674 for VinTrek)
+      tx.setMetadata(674, metadata)
+
+      // Send small amount to script address as proof of completion
+      if (BLOCKCHAIN_CONFIG.scriptAddress) {
+        tx.sendLovelace(BLOCKCHAIN_CONFIG.scriptAddress, '1000000') // 1 ADA
+      }
+
+      const unsignedTx = await tx.build()
+      const signedTx = await this.wallet.signTx(unsignedTx)
+      const txHash = await this.wallet.submitTx(signedTx)
+
+      console.log('✅ Trail completion stored on blockchain:', txHash)
+      return txHash
+    } catch (error) {
+      console.error('Error storing trail completion on blockchain:', error)
+      throw error
+    }
+  }
 
   // Store trail data on Cardano blockchain using transaction metadata
   async storeTrailOnChain(trailData: TrailData): Promise<string> {
@@ -720,6 +770,123 @@ export class VinTrekBlockchainService extends BlockchainService {
     } catch (error) {
       console.error('Error rewarding TREK tokens:', error)
       throw error
+    }
+  }
+
+  // VinTrek provides free trail access - no booking system needed
+  // Users can access any trail anytime without payment or reservations
+
+  // Store TREK token reward transaction
+  async recordTrekReward(rewardData: {
+    hikerAddress: string
+    trailId: string
+    rewardType: 'completion' | 'achievement' | 'bonus'
+    trekAmount: number
+    achievementId?: string
+  }): Promise<string> {
+    if (!this.wallet || typeof window === 'undefined' || !Transaction) {
+      throw new Error('Wallet not connected or Transaction not available')
+    }
+
+    try {
+      console.log('🔗 Recording TREK reward on blockchain...')
+
+      // Create reward metadata
+      const metadata: RewardMetadata = {
+        type: 'trek_reward',
+        hiker_address: rewardData.hikerAddress,
+        trail_id: rewardData.trailId,
+        reward_type: rewardData.rewardType,
+        trek_amount: rewardData.trekAmount,
+        timestamp: new Date().toISOString(),
+        achievement_id: rewardData.achievementId
+      }
+
+      // Build transaction
+      const tx = new Transaction({ initiator: this.wallet })
+
+      // Add metadata
+      tx.setMetadata(674, metadata)
+
+      // In production, this would mint actual TREK tokens
+      // For now, we record the reward transaction
+      if (BLOCKCHAIN_CONFIG.scriptAddress) {
+        tx.sendLovelace(BLOCKCHAIN_CONFIG.scriptAddress, '1000000') // 1 ADA
+      }
+
+      const unsignedTx = await tx.build()
+      const signedTx = await this.wallet.signTx(unsignedTx)
+      const txHash = await this.wallet.submitTx(signedTx)
+
+      console.log('✅ TREK reward recorded:', txHash)
+      return txHash
+    } catch (error) {
+      console.error('Error recording TREK reward:', error)
+      throw error
+    }
+  }
+
+  // Utility methods for GPS and verification
+  private compressGPSPath(
+    gpsPath: Array<{ lat: number; lng: number; timestamp: string }>,
+    maxPoints: number = 10
+  ): Array<{ lat: number; lng: number; timestamp: string }> {
+    if (gpsPath.length <= maxPoints) return gpsPath
+
+    const step = Math.floor(gpsPath.length / maxPoints)
+    const compressed = []
+
+    // Always include first and last points
+    compressed.push(gpsPath[0])
+
+    // Add evenly spaced points
+    for (let i = step; i < gpsPath.length - step; i += step) {
+      compressed.push(gpsPath[i])
+    }
+
+    // Always include last point
+    compressed.push(gpsPath[gpsPath.length - 1])
+
+    return compressed
+  }
+
+  private calculateVerificationScore(gpsPath: Array<{ lat: number; lng: number; timestamp: string }>): number {
+    // Simple verification score based on GPS data quality
+    // In production, this would be more sophisticated
+
+    if (gpsPath.length < 10) return 30 // Too few points
+    if (gpsPath.length < 50) return 60 // Moderate tracking
+    if (gpsPath.length < 100) return 80 // Good tracking
+    return 95 // Excellent tracking
+  }
+
+  // Query blockchain for user's trail history
+  async getUserTrailHistory(walletAddress: string): Promise<TrailCompletionMetadata[]> {
+    try {
+      console.log('🔍 Querying blockchain for trail history...')
+
+      // This would use Blockfrost API to query transactions
+      // For now, return empty array as placeholder
+      console.log('⚠️ Blockchain query not implemented yet - using local cache')
+      return []
+    } catch (error) {
+      console.error('Error querying trail history:', error)
+      return []
+    }
+  }
+
+  // Verify trail completion on blockchain
+  async verifyTrailCompletion(txHash: string): Promise<TrailCompletionMetadata | null> {
+    try {
+      console.log('🔍 Verifying trail completion on blockchain...')
+
+      // This would query the specific transaction and extract metadata
+      // For now, return null as placeholder
+      console.log('⚠️ Blockchain verification not implemented yet')
+      return null
+    } catch (error) {
+      console.error('Error verifying trail completion:', error)
+      return null
     }
   }
 }

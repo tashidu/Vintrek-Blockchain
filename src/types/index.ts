@@ -6,13 +6,32 @@ export interface TrailCoordinate {
   timestamp?: string
 }
 
+export interface TrailRoute {
+  id: string
+  name: string // e.g., "Main Route", "Scenic Route", "Advanced Path"
+  description: string
+  difficulty: 'Easy' | 'Moderate' | 'Hard'
+  distance: string
+  duration: string
+  gpsRoute: TrailCoordinate[]
+  startPoint: TrailCoordinate
+  endPoint: TrailCoordinate
+  elevationGain?: number
+  // Route contribution info
+  contributedBy?: string // wallet address of user who added this route
+  contributedByName?: string // display name of user who added this route
+  isUserContributed?: boolean
+  verified: boolean
+  createdAt: number
+}
+
 export interface Trail {
   id: string
   name: string
   location: string
-  difficulty: 'Easy' | 'Moderate' | 'Hard'
-  distance: string
-  duration: string
+  difficulty: 'Easy' | 'Moderate' | 'Hard' // Overall difficulty (can be overridden by individual routes)
+  distance: string // Primary/average distance
+  duration: string // Primary/average duration
   description: string
   price: number
   available: boolean
@@ -21,7 +40,10 @@ export interface Trail {
     lat: number
     lng: number
   }
-  // GPS route data for the trail
+  // Multiple route support
+  routes: TrailRoute[] // Array of different routes for this trail
+  defaultRouteId?: string // ID of the default/recommended route
+  // Legacy support (for backward compatibility)
   gpsRoute?: TrailCoordinate[]
   startPoint?: TrailCoordinate
   endPoint?: TrailCoordinate
@@ -30,6 +52,7 @@ export interface Trail {
   currentBookings: number
   // Trail ownership and contribution
   contributedBy?: string // wallet address of user who uploaded trail
+  contributedByName?: string // display name of user who uploaded trail
   isPremiumOnly?: boolean
   isUserContributed?: boolean
 }

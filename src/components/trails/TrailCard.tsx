@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Clock, TrendingUp, Calendar, Lock, Crown, Eye } from 'lucide-react'
+import { MapPin, Clock, TrendingUp, Calendar, Lock, Crown, Eye, User, Map, Navigation } from 'lucide-react'
 import { BookingModal } from './BookingModal'
-import { Trail } from '@/types'
+import { Trail, TrailRoute } from '@/types'
 import { usePremiumStatus } from '@/components/premium/PremiumStatus'
 import { useWallet } from '@/components/providers/WalletProvider'
 
@@ -76,6 +76,31 @@ export function TrailCard({ trail }: TrailCardProps) {
             <MapPin className="h-4 w-4 mr-1" />
             <span className="text-sm">{trail.location}</span>
           </div>
+          {trail.isUserContributed && trail.contributedByName && (
+            <div className="flex items-center text-blue-600 mb-2">
+              <User className="h-4 w-4 mr-1" />
+              <span className="text-sm">Added by {trail.contributedByName}</span>
+            </div>
+          )}
+
+          {/* Route Information */}
+          {trail.routes && trail.routes.length > 1 && (
+            <div className="flex items-center text-purple-600 mb-2">
+              <Map className="h-4 w-4 mr-1" />
+              <span className="text-sm">{trail.routes.length} routes available</span>
+            </div>
+          )}
+
+          {/* Show user-contributed routes */}
+          {trail.routes && trail.routes.some(route => route.isUserContributed) && (
+            <div className="flex items-center text-orange-600 mb-2">
+              <Navigation className="h-4 w-4 mr-1" />
+              <span className="text-sm">
+                {trail.routes.filter(route => route.isUserContributed).length} community route(s)
+              </span>
+            </div>
+          )}
+
           <p className="text-gray-600 text-sm">{trail.description}</p>
         </div>
 

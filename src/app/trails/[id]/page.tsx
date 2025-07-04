@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { 
-  MapPin, Clock, TrendingUp, Users, Star, Calendar, 
-  Trophy, Coins, Camera, ArrowLeft, Share2 
+import {
+  MapPin, Clock, TrendingUp, Users, Star, Calendar,
+  Trophy, Coins, Camera, ArrowLeft, Share2, User
 } from 'lucide-react'
 import { BookingModal } from '@/components/trails/BookingModal'
 import { TrailCompletion } from '@/components/trails/TrailCompletion'
@@ -90,6 +90,35 @@ const mockTrails: Trail[] = [
     ],
     isUserContributed: false,
     isPremiumOnly: true
+  },
+  {
+    id: '4',
+    name: 'Hidden Waterfall Trail',
+    location: 'Kandy, Sri Lanka',
+    difficulty: 'Moderate',
+    distance: '6.8 km',
+    duration: '3-4 hours',
+    description: 'A beautiful hidden waterfall discovered by local hikers. This trail leads through dense forest to a stunning 40-meter waterfall with natural swimming pools.',
+    price: 0,
+    available: true,
+    features: ['Waterfall', 'Swimming', 'Forest Trail', 'Photography'],
+    maxCapacity: 15,
+    currentBookings: 8,
+    coordinates: { lat: 7.2906, lng: 80.6337 },
+    startPoint: { lat: 7.2906, lng: 80.6337 },
+    endPoint: { lat: 7.2956, lng: 80.6387 },
+    gpsRoute: [
+      { lat: 7.2906, lng: 80.6337 },
+      { lat: 7.2916, lng: 80.6347 },
+      { lat: 7.2926, lng: 80.6357 },
+      { lat: 7.2936, lng: 80.6367 },
+      { lat: 7.2946, lng: 80.6377 },
+      { lat: 7.2956, lng: 80.6387 }
+    ],
+    isUserContributed: true,
+    contributedBy: 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
+    contributedByName: 'Hiking_Explorer_LK',
+    isPremiumOnly: false
   }
 ]
 
@@ -101,6 +130,7 @@ export default function TrailDetailPage() {
   const [trail, setTrail] = useState<Trail | null>(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [selectedRouteId, setSelectedRouteId] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -108,6 +138,11 @@ export default function TrailDetailPage() {
     const foundTrail = mockTrails.find(t => t.id === trailId)
     setTrail(foundTrail || null)
     setLoading(false)
+
+    // Set default route if trail has routes
+    if (foundTrail?.routes && foundTrail.routes.length > 0) {
+      setSelectedRouteId(foundTrail.defaultRouteId || foundTrail.routes[0].id)
+    }
   }, [trailId])
 
   if (loading) {
@@ -247,6 +282,19 @@ export default function TrailDetailPage() {
               </div>
             </div>
 
+            {/* Contributor Information */}
+            {trail.isUserContributed && trail.contributedByName && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center text-blue-700">
+                  <User className="h-5 w-5 mr-2" />
+                  <span className="font-medium">Trail contributed by {trail.contributedByName}</span>
+                </div>
+                <p className="text-blue-600 text-sm mt-1">
+                  This trail was added by a community member and verified by our team.
+                </p>
+              </div>
+            )}
+
             <p className="text-gray-600 text-lg leading-relaxed mb-6">{trail.description}</p>
 
             {/* Trail Map */}
@@ -262,13 +310,16 @@ export default function TrailDetailPage() {
                 ) : null}
                 <TrailMap
                   trailName={trail.name}
-                  coordinates={trail.gpsRoute}
+                  coordinates={trail.gpsRoute || []}
                   startPoint={trail.startPoint}
                   endPoint={trail.endPoint}
                   difficulty={trail.difficulty}
                   distance={trail.distance}
                   liveTracking={false}
                   className="mb-4"
+                  routes={trail.routes}
+                  selectedRouteId={selectedRouteId}
+                  onRouteChange={setSelectedRouteId}
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                   <div>

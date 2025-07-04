@@ -42,7 +42,98 @@ export default function TrailsPage() {
         console.log('🔗 Loading trails from blockchain service...')
         const loadedTrails = await trailService.getTrails()
 
-        console.log(`✅ Loaded ${loadedTrails.length} trails`)
+        // Add multi-route trail for testing
+        const multiRouteTrail: Trail = {
+          id: 'hidden-waterfall-004',
+          name: 'Hidden Waterfall Trail',
+          location: 'Kandy, Sri Lanka',
+          difficulty: 'Moderate',
+          distance: '6.8 km',
+          duration: '3-4 hours',
+          description: 'A beautiful hidden waterfall discovered by local hikers. Multiple routes available with different difficulty levels and scenic viewpoints.',
+          price: 0,
+          available: true,
+          image: '/images/trails/hidden-waterfall.jpg',
+          features: ['GPS Tracking', 'NFT Certificate', 'TREK Rewards', 'Waterfall', 'Swimming'],
+          maxCapacity: 25,
+          currentBookings: 8,
+          isUserContributed: true,
+          contributedBy: 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
+          contributedByName: 'Hiking_Explorer_LK',
+          isPremiumOnly: false,
+          routes: [
+            {
+              id: 'route-main',
+              name: 'Main Route',
+              description: 'The original route discovered by the community. Well-marked path through forest.',
+              difficulty: 'Moderate',
+              distance: '6.8 km',
+              duration: '3-4 hours',
+              gpsRoute: [
+                { lat: 7.2906, lng: 80.6337 },
+                { lat: 7.2926, lng: 80.6357 },
+                { lat: 7.2956, lng: 80.6387 }
+              ],
+              startPoint: { lat: 7.2906, lng: 80.6337 },
+              endPoint: { lat: 7.2956, lng: 80.6387 },
+              elevationGain: 320,
+              contributedBy: 'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35a3x',
+              contributedByName: 'Hiking_Explorer_LK',
+              isUserContributed: true,
+              verified: true,
+              createdAt: Date.now() - 86400000
+            },
+            {
+              id: 'route-scenic',
+              name: 'Scenic Route',
+              description: 'Longer route with panoramic viewpoints. Added by local guide for photography enthusiasts.',
+              difficulty: 'Moderate',
+              distance: '8.2 km',
+              duration: '4-5 hours',
+              gpsRoute: [
+                { lat: 7.2906, lng: 80.6337 },
+                { lat: 7.2916, lng: 80.6347 },
+                { lat: 7.2936, lng: 80.6367 },
+                { lat: 7.2956, lng: 80.6387 }
+              ],
+              startPoint: { lat: 7.2906, lng: 80.6337 },
+              endPoint: { lat: 7.2956, lng: 80.6387 },
+              elevationGain: 450,
+              contributedBy: 'addr1qy3gxv8umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgse35b4y',
+              contributedByName: 'Nature_Guide_SL',
+              isUserContributed: true,
+              verified: true,
+              createdAt: Date.now() - 43200000
+            },
+            {
+              id: 'route-easy',
+              name: 'Easy Access Route',
+              description: 'Shorter, easier path suitable for families. Recently added by community.',
+              difficulty: 'Easy',
+              distance: '4.5 km',
+              duration: '2-3 hours',
+              gpsRoute: [
+                { lat: 7.2916, lng: 80.6347 },
+                { lat: 7.2946, lng: 80.6377 },
+                { lat: 7.2956, lng: 80.6387 }
+              ],
+              startPoint: { lat: 7.2916, lng: 80.6347 },
+              endPoint: { lat: 7.2956, lng: 80.6387 },
+              elevationGain: 180,
+              contributedBy: 'addr1qz4hxw9vmzitulyzxq9x1emqeu4l7dxoh6qyk4kitzeer4o1e4wmmzrxwty6wlued9dd4tr946mv8drw3ywm3xzwgfte36c5z',
+              contributedByName: 'Family_Hiker_22',
+              isUserContributed: true,
+              verified: true,
+              createdAt: Date.now() - 21600000
+            }
+          ],
+          defaultRouteId: 'route-main'
+        }
+
+        const allTrails = [...loadedTrails, multiRouteTrail]
+        console.log(`✅ Loaded ${allTrails.length} trails (including user-contributed)`)
+        setTrails(allTrails)
+        setFilteredTrails(allTrails)
         setTrails(loadedTrails)
         setFilteredTrails(loadedTrails)
 

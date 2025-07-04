@@ -111,18 +111,7 @@ export interface Achievement {
   category: 'distance' | 'elevation' | 'trails' | 'special'
 }
 
-// Trail Booking Types
-export interface TrailBooking {
-  id: string
-  trailId: string
-  walletAddress: string
-  bookedAt: string
-  scheduledDate: string
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
-  paymentTxHash?: string
-  participants: number
-  totalCost: number // in ADA lovelace
-}
+// VinTrek provides free trail access - no booking system needed
 
 // GPS Tracking State
 export interface GPSTrackingState {
